@@ -4,36 +4,18 @@
 			id->{{ this.$route.params.id }}
 		</header>
 		<div class="body">
-			<div class="sender-message"><p>1111</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="sender-message"><p>1111</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="sender-message"><p>1111</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="sender-message"><p>1111</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="sender-message"><p>1111</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="sender-message"><p>1111</p></div>
-			<div class="sender-message"><p>1111</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="sender-message"><p>1111</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="sender-message"><p>1111</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="sender-message"><p>1111</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="sender-message"><p>1111</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="receiver-message"><p>22222</p></div>
-			<div class="sender-message"><p>1111</p></div>
-
-			<div class="receiver-message"><p>22222</p></div>
+			<div
+				v-for="conversationDataItem in conversationData"
+				:key="conversationDataItem._id"
+				:class="[
+					conversationDataItem.me
+						? 'sender-message'
+						: 'receiver-message',
+				]"
+			>
+				<p>{{ conversationDataItem.body }}</p>
+			</div>
+			<!-- <div class="receiver-message"><p>22222</p></div> -->
 		</div>
 		<footer class="conservation-footer">
 			<div class="emoji">@</div>
@@ -55,16 +37,65 @@ export default {
 	data() {
 		return {
 			message: '',
+			conversationData: [],
 		};
 	},
+	sockets: {
+		connect() {
+			// Fired when the socket connects.
+			this.isConnected = true;
+			this.$socket.emit('add-user', localStorage.getItem('userId'));
+			console.log('connect');
+		},
+		disconnect() {
+			this.isConnected = false;
+			console.log('sisssi');
+		},
+		// reciving() {
+		// 	console.log('conneddjdjct, data');
+		// },
+		// Fired when the server sends something on the "messageChannel" channel.
+		messageChannel(data) {
+			// this.socketMessage = data;
+			// console.log('connect, data', data);
+			this.recieveMessage(data);
+		},
+	},
 	methods: {
+		recieveMessage(message) {
+			console.log('recieve message');
+			this.conversationData.push({
+				me: false,
+				body: message,
+			});
+		},
 		sendMessage() {
+			this.$socket.emit('send-msg', {
+				message: this.message,
+				to: this.$route.params.id,
+				from: localStorage.getItem('userId'),
+			});
 			console.log('send message');
+			this.conversationData.push({
+				me: true,
+				body: this.message,
+			});
 			this.$store.dispatch('sendMessage', {
 				message: this.message,
 				toId: this.$route.params.id,
 			});
+			this.message = '';
 		},
+	},
+	async beforeMount() {
+		const conversationData = await this.$store.dispatch(
+			'getConversationData',
+			{
+				toId: this.$route.params.id,
+			}
+		);
+		this.conversationData = conversationData.conversationData;
+		console.log('conversationData', this.conversationData);
 	},
 };
 </script>

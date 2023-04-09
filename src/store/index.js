@@ -127,6 +127,34 @@ export default createStore({
 				throw new Error('Creating a user failed!');
 			}
 		},
+		async getConversationData(context, payload) {
+			try {
+				const response = await fetch(
+					`http://localhost:8080/feed/conversation-data`,
+					{
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							Authorization: `Bearer ${localStorage.getItem(
+								'token'
+							)}`,
+						},
+						body: JSON.stringify({
+							userId: localStorage.getItem('userId'),
+							toId: payload.toId,
+						}),
+					}
+				);
+				const responseData = await response.json();
+				console.log(responseData);
+				return {
+					status: response.status,
+					conversationData: responseData.conversationData,
+				};
+			} catch (error) {
+				throw new Error('Creating a user failed!');
+			}
+		},
 	},
 	modules: {},
 });
