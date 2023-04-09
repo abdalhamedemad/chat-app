@@ -1,21 +1,15 @@
 <template>
 	<!-- <nav>chat home page</nav> -->
 	<div class="chat-container">
-		<chat-home-compnent v-if="!callUserId"></chat-home-compnent>
-		<conservation-room v-else></conservation-room>
-		<the-login v-if="0"></the-login>
-		<the-signup v-if="0"></the-signup>
+		<conservation-room></conservation-room>
 	</div>
 </template>
 
 <script>
-import ChatHomeCompnent from '@/components/ChatHomeCompnent.vue';
 import ConservationRoom from '@/components/ConservationRoom.vue';
-import TheLogin from '@/components/TheLogin.vue';
-import TheSignup from '@/components/TheSignup.vue';
 export default {
 	name: 'ChatHome',
-	components: { ChatHomeCompnent, ConservationRoom, TheLogin, TheSignup },
+	components: { ConservationRoom },
 	data() {
 		return {
 			callUserId: null,

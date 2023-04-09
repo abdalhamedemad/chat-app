@@ -1,6 +1,8 @@
 <template>
 	<div class="conservation-container">
-		<header class="conservation-header"></header>
+		<header class="conservation-header">
+			id->{{ this.$route.params.id }}
+		</header>
 		<div class="body">
 			<div class="sender-message"><p>1111</p></div>
 			<div class="receiver-message"><p>22222</p></div>
@@ -36,12 +38,36 @@
 		<footer class="conservation-footer">
 			<div class="emoji">@</div>
 			<div class="chat-input-message">
-				<input type="text" placeholder="write a message" />
+				<input
+					v-model="message"
+					type="text"
+					placeholder="write a message"
+				/>
 			</div>
-			<button class="send-message">-></button>
+			<button @click="sendMessage" class="send-message">-></button>
 		</footer>
 	</div>
 </template>
+
+<script>
+export default {
+	name: 'ConservationRoom',
+	data() {
+		return {
+			message: '',
+		};
+	},
+	methods: {
+		sendMessage() {
+			console.log('send message');
+			this.$store.dispatch('sendMessage', {
+				message: this.message,
+				toId: this.$route.params.id,
+			});
+		},
+	},
+};
+</script>
 
 <style scoped>
 input,

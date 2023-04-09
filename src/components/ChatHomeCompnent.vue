@@ -1,9 +1,14 @@
 <template>
-	<div class="chat-item">
+	<div
+		class="chat-item"
+		v-for="user in users"
+		:key="user._id"
+		@click="handelClick(user._id)"
+	>
 		<div class="chat-photo"></div>
 		<div class="chat-content">
 			<div class="chat-name">
-				<p>Ahmed</p>
+				<p v-if="user.name != null">{{ user.name }}</p>
 			</div>
 			<div class="chat-last-message">
 				<p>hey ! how are you</p>
@@ -11,6 +16,31 @@
 		</div>
 	</div>
 </template>
+<script>
+export default {
+	name: 'ChatHome',
+	components: {},
+	data() {
+		return {
+			users: [],
+		};
+	},
+	methods: {
+		handelClick(id) {
+			this.$router.push(`/chat/${id}`);
+		},
+	},
+	async beforeMount() {
+		if (!this.$store.getters['isAuthenticated']) {
+			this.$router.push('/login');
+		}
+		const res = await this.$store.dispatch('getUsers');
+		if (res.status == 200) {
+			this.users = res.userData;
+		}
+	},
+};
+</script>
 <style scoped>
 p {
 	padding: 0px;
@@ -29,6 +59,7 @@ div {
 	flex-direction: row;
 	align-items: center;
 	cursor: pointer;
+	margin-bottom: 8px;
 }
 .chat-photo {
 	width: 40px;
