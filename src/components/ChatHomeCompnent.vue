@@ -36,6 +36,9 @@ export default {
 		}
 		const res = await this.$store.dispatch('getUsers');
 		if (res.status == 200) {
+			res.userData = res.userData.filter(
+				(user) => user._id != localStorage.getItem('userId')
+			);
 			this.users = res.userData;
 		}
 	},

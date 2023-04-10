@@ -5,6 +5,7 @@ import ChatHome from '../views/ChatHomeView.vue';
 import LoginView from '../views/LoginView.vue';
 import SignupView from '../views/SignupView.vue';
 import ConversationRoomView from '../views/ConversationRoomView.vue';
+import AboutView from '../views/AboutView.vue';
 const routes = [
 	{
 		path: '/',
@@ -29,6 +30,11 @@ const routes = [
 		path: '/chat/:id',
 		name: 'chat',
 		component: ConversationRoomView,
+	},
+	{
+		path: '/about',
+		name: 'about',
+		component: AboutView,
 	},
 	// {
 	// 	path: '/about',

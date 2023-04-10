@@ -61,7 +61,7 @@ export default {
 					username: this.username,
 				})
 				.then(() => {
-					this.$router.push('/chat-home');
+					this.$router.push('/login');
 				});
 		},
 	},

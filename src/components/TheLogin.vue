@@ -41,6 +41,7 @@ export default {
 			const res = await this.$store.dispatch('login', {
 				email: this.email,
 				password: this.password,
+				userId: localStorage.getItem('userId'),
 			});
 			// console.log('jjj', res);
 			if (res == 200) {

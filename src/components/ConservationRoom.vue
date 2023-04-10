@@ -44,6 +44,7 @@ export default {
 			n: 55621763,
 			d: 15887671,
 		};
+		// n must be greater that 67364234
 	},
 	sockets: {
 		connect() {
@@ -193,13 +194,14 @@ export default {
 			console.log('sendmessage');
 			// break the string into a groups of 5 characters
 			let groupsArray = this.message.match(/.{1,5}/g);
-			console.log('groupArray', groupsArray);
+			// console.log('groupArray', groupsArray);
 			if (groupsArray[groupsArray.length - 1].length < 5) {
 				// add padding
 				groupsArray[groupsArray.length - 1] += ' '.repeat(
 					5 - groupsArray[groupsArray.length - 1].length
 				);
 			}
+			console.log('sendMessage groupArray', groupsArray);
 			for (let i = 0; i < groupsArray.length; i++) {
 				// encode each group
 				groupsArray[i] = this.encodeMessage(groupsArray[i]);
@@ -243,6 +245,41 @@ export default {
 							return;
 						}
 					}
+				}
+			}
+		},
+		getRanArr(lngth) {
+			let arr = [];
+			do {
+				let ran = Math.floor(Math.random() * lngth);
+				arr = arr.indexOf(ran) > -1 ? arr : arr.concat(ran);
+			} while (arr.length < lngth);
+			return arr;
+		},
+		attackToGetThePrivateKey(cipher, plain, keySizeInBits) {
+			let randArr = this.getRanArr(2 ** keySizeInBits);
+			let ArrayOfTimeTakenD = [];
+			let startTimeAttack = Date.now();
+			for (let j = 0; j < randArr.length; j++) {
+				let startTimeForDecryption = Date.now();
+				let plaintText = this.decryptMessage(
+					cipher,
+					randArr[j],
+					this.n
+				);
+				let timeTakenForDecryption =
+					Date.now() - startTimeForDecryption;
+				ArrayOfTimeTakenD.push(timeTakenForDecryption);
+				if (plaintText == plain) {
+					let timeTakenForAttack = Date.now() - startTimeAttack;
+					console.log('d', randArr[j]);
+					return {
+						d: randArr[j],
+						time: timeTakenForAttack,
+						averageTimeForDecryption:
+							ArrayOfTimeTakenD.reduce((a, b) => a + b, 0) /
+							ArrayOfTimeTakenD.length,
+					};
 				}
 			}
 		},
@@ -305,6 +342,8 @@ p {
 	margin-top: 50px;
 	display: flex;
 	flex-direction: column;
+	height: 80%;
+	overflow: auto;
 }
 .sender-message {
 	display: flex;
