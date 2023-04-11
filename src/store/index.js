@@ -162,6 +162,34 @@ export default createStore({
 				throw new Error('Creating a user failed!');
 			}
 		},
+		async getPublicKey(context, payload) {
+			try {
+				const response = await fetch(
+					`http://localhost:8080/feed/get-public-key`,
+					{
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							Authorization: `Bearer ${localStorage.getItem(
+								'token'
+							)}`,
+						},
+						body: JSON.stringify({
+							userId: payload.userId,
+						}),
+					}
+				);
+				const responseData = await response.json();
+				console.log(responseData);
+				return {
+					status: response.status,
+					e: responseData.e,
+					n: responseData.n,
+				};
+			} catch (error) {
+				throw new Error('Creating a user failed!');
+			}
+		},
 	},
 	modules: {},
 });

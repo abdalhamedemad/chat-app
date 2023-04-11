@@ -2,7 +2,7 @@
 	<div class="conservation-container">
 		<header style="color: aliceblue" class="conservation-header">
 			id->{{ this.$route.params.id }}
-			<div>
+			<!-- <div>
 				<label style="color: aliceblue" for="">p</label>
 				<input
 					style="width: 50px"
@@ -34,7 +34,7 @@
 				<label style="color: aliceblue" for=""
 					>Your private key ->{{ d }}
 				</label>
-			</div>
+			</div> -->
 		</header>
 		<div class="body">
 			<div

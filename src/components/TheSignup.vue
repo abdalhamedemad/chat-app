@@ -14,9 +14,16 @@
 				v-model="keySize"
 				id="ur-r-email"
 				type="number"
+				min="15"
+				max="20"
 				placeholder="15 to 20"
 			/>
 			<button @click="generateKeys(keySize)">generate keys</button>
+		</div>
+		<div style="color: aliceblue">
+			<div>p->{{ p }} || q->{{ q }}</div>
+			<div>n->{{ n }} || e->{{ e }}</div>
+			<div>d->{{ d }}</div>
 		</div>
 		<div class="password">
 			<label for="u-r-pass">Enter U R Password</label>
@@ -46,17 +53,13 @@ export default {
 	},
 	methods: {
 		validateUsername() {
-			return this.username.length > 5 && this.username.length < 20;
+			return this.username.length > 4;
 		},
 		validatePassword() {
-			return this.password.length > 5 && this.password.length < 20;
+			return this.password.length > 5;
 		},
 		validateEmail() {
-			return (
-				this.email.length > 5 &&
-				this.email.length < 20 &&
-				this.email.includes('@')
-			);
+			return this.email.length > 5 && this.email.includes('@');
 		},
 		handelSignup() {
 			console.log('handelSignup');

@@ -29,6 +29,10 @@
 	>
 		attackToGetThePrivateKeyFromPublicKeys
 	</button>
+	<input type="text" placeholder="ID" v-model="ID" />
+	<button @click="attackToGetThePrivateKeyFromPublicKeysWithAUserID(ID)">
+		attackToGetThePrivateKeyFromPublicKeysWithAUserID
+	</button>
 	<div>
 		PrivateKeys -> p: {{ ap }} q: {{ aq }} phi: {{ aphi }} d: {{ ad }}
 	</div>
@@ -106,6 +110,9 @@ export default {
 			ad: '',
 			an: '',
 			ae: '',
+			ID: '',
+			eAttack: '',
+			nAttack: '',
 		};
 	},
 	computed: {
@@ -427,13 +434,13 @@ export default {
 			};
 			return keys;
 		},
-		generateGraph() {
+		async generateGraph() {
 			// let arrOfKeys = [];
 			// let arrOfTimes = [];
 			let array = [];
 			let array2 = [];
 			console.log('gg');
-			for (let i = 5; i < 20; i++) {
+			for (let i = 5; i < 15; i++) {
 				let keys = this.generateKeys(i);
 				array.push({
 					keys,
@@ -499,6 +506,17 @@ export default {
 				datasets: [{ data: this.arrOfTimes2 }],
 			};
 			this.chartData20;
+		},
+		async attackToGetThePrivateKeyFromPublicKeysWithAUserID(ID) {
+			if (ID == '') return;
+			else {
+				console.log(ID);
+				const publicKeys = await this.$store.dispatch('getPublicKey', {
+					userId: ID,
+				});
+				console.log('publicKeys', publicKeys);
+				this.attackToGetThePrivateKeyFromPublicKeys(publicKeys);
+			}
 		},
 	},
 };

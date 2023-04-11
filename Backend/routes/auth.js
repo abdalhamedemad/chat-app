@@ -33,6 +33,5 @@ router.put(
 
 router.post('/login', authController.login);
 
-// router.post('/send-message', authController.sendMessage);
 
 module.exports = router;
