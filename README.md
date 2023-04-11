@@ -19,7 +19,6 @@ Login page             ->http://localhost:8081/#/login
 Attak & analysis Page  -> http://localhost:8081/#/about
 ```
 ![alt text](https://github.com/abdalhamedemad/chat-app/blob/main/photos/1.jpg?raw=true)
-![alt text](https://github.com/abdalhamedemad/chat-app/blob/main/photos/2.jpg?raw=true)
 ![alt text](https://github.com/abdalhamedemad/chat-app/blob/main/photos/3.jpg?raw=true)
 ![alt text](https://github.com/abdalhamedemad/chat-app/blob/main/photos/4.jpg?raw=true)
 ![alt text](https://github.com/abdalhamedemad/chat-app/blob/main/photos/5.jpg?raw=true)
