@@ -31,6 +31,11 @@ export default createStore({
 							email: payload.email,
 							password: payload.password,
 							name: payload.username,
+							p: payload.p,
+							q: payload.q,
+							d: payload.d,
+							e: payload.e,
+							n: payload.n,
 						}),
 					}
 				);
@@ -67,6 +72,8 @@ export default createStore({
 				console.log(responseData);
 				localStorage.setItem('token', responseData.token);
 				localStorage.setItem('userId', responseData.userId);
+				localStorage.setItem('PR', responseData.d);
+				localStorage.setItem('n', responseData.n);
 				console.log(response.status);
 				return response.status;
 				// context.commit('setUserData', {

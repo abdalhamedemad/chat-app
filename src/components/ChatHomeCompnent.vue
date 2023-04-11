@@ -3,7 +3,7 @@
 		class="chat-item"
 		v-for="user in users"
 		:key="user._id"
-		@click="handelClick(user._id)"
+		@click="handelClick(user._id, user.e, user.n)"
 	>
 		<div class="chat-photo"></div>
 		<div class="chat-content">
@@ -26,8 +26,8 @@ export default {
 		};
 	},
 	methods: {
-		handelClick(id) {
-			this.$router.push(`/chat/${id}`);
+		handelClick(id, e, n) {
+			this.$router.push(`/chat/${id}|${e}|${n}`);
 		},
 	},
 	async beforeMount() {
@@ -40,6 +40,7 @@ export default {
 				(user) => user._id != localStorage.getItem('userId')
 			);
 			this.users = res.userData;
+			console.log(res.userData);
 		}
 	},
 };

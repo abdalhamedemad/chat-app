@@ -1,6 +1,6 @@
 <template>
 	<div class="about">
-		<h1>This is an about page</h1>
+		<h1>Attak & analysis Page</h1>
 		<input type="text" placeholder="cipherText" v-model="cipherText" />
 		<input type="text" placeholder="plainText" v-model="plainText" />
 		<input
@@ -17,11 +17,78 @@
 		</button>
 		<p>attackD: {{ attackD }}</p>
 	</div>
+	<input type="text" placeholder="e" v-model="ae" />
+	<input type="text" placeholder="n" v-model="an" />
+	<button
+		@click="
+			attackToGetThePrivateKeyFromPublicKeys({
+				n: Number(an),
+				e: Number(ae),
+			})
+		"
+	>
+		attackToGetThePrivateKeyFromPublicKeys
+	</button>
+	<div>
+		PrivateKeys -> p: {{ ap }} q: {{ aq }} phi: {{ aphi }} d: {{ ad }}
+	</div>
+	<div>
+		<h1>Analysis</h1>
+		<!--  -->
+		<h4>attack with different key sizes</h4>
+		<button @click="generateGraph">generate graph</button>
+		<Bar id="my-chart-id" :options="chartOptions" :data="chartData" />
+	</div>
+	<div>
+		<h4>Calc time of encryption/decryption with different key sizes</h4>
+		<button @click="generateGraphEncryption">
+			generateGraphEncryption
+		</button>
+		<Bar id="my-chart-id" :options="chartOptions2" :data="chartData2" />
+	</div>
 </template>
 <script>
+import { Bar } from 'vue-chartjs';
+import {
+	Chart as ChartJS,
+	Title,
+	Tooltip,
+	Legend,
+	BarElement,
+	CategoryScale,
+	LinearScale,
+} from 'chart.js';
+
+ChartJS.register(
+	Title,
+	Tooltip,
+	Legend,
+	BarElement,
+	CategoryScale,
+	LinearScale
+);
 export default {
+	components: { Bar },
 	data() {
 		return {
+			arrOfTimes: [],
+			arrOfKeys: [],
+			chartData1: {
+				labels: this.arrOfKeys,
+				datasets: [{ data: this.arrOfTimes }],
+			},
+			chartOptions1: {
+				responsive: true,
+			},
+			arrOfTimes2: [],
+			arrOfKeys2: [],
+			chartData2: {
+				labels: this.arrOfKeys2,
+				datasets: [{ data: this.arrOfTimes2 }],
+			},
+			chartOptions2: {
+				responsive: true,
+			},
 			cipherText: '',
 			plainText: '',
 			KeySizeInBits: '',
@@ -33,7 +100,24 @@ export default {
 			e: 7,
 			n: 55621763,
 			d: 15887671,
+			ap: '',
+			aq: '',
+			aphi: '',
+			ad: '',
+			an: '',
+			ae: '',
 		};
+	},
+	computed: {
+		chartData() {
+			return this.chartData1;
+		},
+		chartData20() {
+			return this.chartData2;
+		},
+		chartOptions() {
+			return this.chartOptions1;
+		},
 	},
 	methods: {
 		encodeMessage(message) {
@@ -91,25 +175,31 @@ export default {
 			return this.powerAlgorithmMod(message, e, n);
 		},
 		decryptMessage(message, d, n) {
-			// console.log('decryptMessage', message, d, n);
-			return this.powerAlgorithmMod(Number(message), d, n);
+			console.log('decryptMessage', message, d, n);
+			return this.powerAlgorithmMod(message, d, n);
 		},
 		powerAlgorithmMod(a, b, n) {
+			// eslint-disable-next-line
+			a = BigInt(a);
+			// eslint-disable-next-line
+			n = BigInt(n);
 			let binaryB = b.toString(2);
-			let result = 1;
+			// eslint-disable-next-line
+			let result = BigInt(1);
 			for (let i = 0; i < binaryB.length; i++) {
 				result = (result * result) % n;
 				if (binaryB[i] == 1) {
 					result = (result * a) % n;
 				}
 			}
-			return result;
+			return Number(result);
 		},
 		gcd(a, b) {
 			if (b == 0) return a;
-			else return this.gcd(a, a % b);
+			else return this.gcd(b, a % b);
 		},
 		inverseModulo(a, m) {
+			let M = m;
 			let x1, x2, y1, y2, q, r, x, y;
 			x1 = 0;
 			x2 = 1;
@@ -130,6 +220,12 @@ export default {
 			if (a != 1) {
 				return 'a and m are not coprime';
 			} else {
+				if (x2 < 0) {
+					console.log('x2', x2);
+					console.log('m', M);
+					x2 += M;
+					x2 = x2 % M;
+				}
 				return x2;
 			}
 		},
@@ -249,6 +345,160 @@ export default {
 					};
 				}
 			}
+		},
+		isPrimee(n) {
+			for (let i = 2; i <= n / 2; i++) {
+				if (n % i === 0) {
+					return false;
+				}
+			}
+			return true;
+		},
+		findPrimeFactors(num) {
+			const res = num % 2 === 0 ? [2] : [];
+			let start = 3;
+			while (start <= num) {
+				if (num % start === 0) {
+					if (this.isPrimee(start)) {
+						res.push(start);
+					}
+				}
+				start++;
+			}
+			return res;
+		},
+		attackToGetThePrivateKeyFromPublicKeys(publicKey) {
+			let primeFactors = [];
+			primeFactors = this.findPrimeFactors(publicKey.n);
+			let p = primeFactors[0];
+			let q = primeFactors[1];
+			let phi = (p - 1) * (q - 1);
+			let d = this.inverseModulo(publicKey.e, phi);
+			console.log(p, q, phi, d);
+			this.ap = p;
+			this.aq = q;
+			this.aphi = phi;
+			this.ad = d;
+			return d;
+		},
+		generateRandomNumbers(min, max) {
+			return Math.floor(Math.random() * (max - min) + min);
+		},
+		generateRandomPrimeNumbers(bitsSize) {
+			let p = this.generateRandomNumbers(
+				2 ** (bitsSize - 1),
+				2 ** bitsSize - 1
+			);
+			while (!this.isPrimee(p)) {
+				p = this.generateRandomNumbers(
+					2 ** (bitsSize - 1),
+					2 ** bitsSize - 1
+				);
+			}
+			return p;
+		},
+		generateKeys(key_size) {
+			// if (20 <= Number(key_size) && 25 <= Number(key_size)) {
+			console.log(123);
+			let p = this.generateRandomPrimeNumbers(Number(key_size));
+			console.log(p, this.isPrimee(p));
+			let q = this.generateRandomPrimeNumbers(Number(key_size));
+			while (q == p) {
+				q = this.generateRandomPrimeNumbers(Number(key_size));
+			}
+			console.log(q, this.isPrimee(p));
+			let phi = (p - 1) * (q - 1);
+			let e = this.generateRandomNumbers(3, 100);
+			while (this.gcd(e, phi) != 1) {
+				e = this.generateRandomNumbers(3, 100);
+			}
+			let d = this.inverseModulo(e, phi);
+			console.log('d:', d, 'e:', e, 'p*q', p * q, 'phi', phi, 'e', e);
+			// this.p = p;
+			// this.q = q;
+			// this.e = e;
+			// this.d = d;
+			// this.n = p * q;
+			// }
+			let keys = {
+				e,
+				n: p * q,
+				d,
+			};
+			return keys;
+		},
+		generateGraph() {
+			// let arrOfKeys = [];
+			// let arrOfTimes = [];
+			let array = [];
+			let array2 = [];
+			console.log('gg');
+			for (let i = 5; i < 20; i++) {
+				let keys = this.generateKeys(i);
+				array.push({
+					keys,
+					keySize: i,
+				});
+				this.arrOfKeys.push(i);
+			}
+			console.log('ff');
+
+			for (let i = 0; i < array.length; i++) {
+				let startTimeAttack = Date.now();
+				let d = this.attackToGetThePrivateKeyFromPublicKeys({
+					e: array[i].keys.e,
+					n: array[i].keys.n,
+				});
+
+				let r = true;
+				if (d != array[i].keys.d) {
+					r = false;
+					console.log(false);
+				}
+				array2.push({
+					s: array[i].keySize,
+					r,
+					t: Date.now() - startTimeAttack,
+				});
+				this.arrOfTimes.push(Date.now() - startTimeAttack);
+			}
+			console.log(array2);
+			this.chartData1 = {
+				labels: this.arrOfKeys,
+				datasets: [{ data: this.arrOfTimes }],
+			};
+			this.chartData;
+		},
+		generateGraphEncryption() {
+			// let arrOfKeys = [];
+			// let arrOfTimes = [];
+			let array = [];
+			let array2 = [];
+			console.log('gg');
+			for (let i = 5; i < 30; i++) {
+				let keys = this.generateKeys(i);
+				array.push({
+					keys,
+					keySize: i,
+				});
+				this.arrOfKeys2.push(i);
+			}
+			console.log('ff');
+			for (let i = 0; i < array.length; i++) {
+				let startTimeAttack = Date.now();
+				this.encryptMessage(12345, array[i].keys.e, array[i].keys.n);
+				array2.push({
+					s: array[i].keySize,
+					t: Date.now() - startTimeAttack,
+				});
+				this.arrOfTimes2.push(Date.now() - startTimeAttack);
+			}
+			console.log(array2);
+			this.chartData2 = {
+				labels: this.arrOfKeys2,
+				datasets: [{ data: this.arrOfTimes2 }],
+			};
+			this.chartData20;
 		},
 	},
 };

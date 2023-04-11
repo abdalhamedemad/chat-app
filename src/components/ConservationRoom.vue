@@ -1,7 +1,40 @@
 <template>
 	<div class="conservation-container">
-		<header class="conservation-header">
+		<header style="color: aliceblue" class="conservation-header">
 			id->{{ this.$route.params.id }}
+			<div>
+				<label style="color: aliceblue" for="">p</label>
+				<input
+					style="width: 50px"
+					type="text"
+					placeholder="p"
+					v-model="p"
+				/>
+				<label style="color: aliceblue" for="">q</label>
+				<input
+					style="width: 50px"
+					type="text"
+					placeholder="q"
+					v-model="q"
+				/>
+				<label style="color: aliceblue" for="">e</label>
+				<input
+					style="width: 50px"
+					type="text"
+					placeholder="e"
+					v-model="e"
+				/>
+				<button @click="validKeys">validKeys</button>
+				<label style="color: aliceblue" for=""
+					>{{
+						validKeysFlag ? 'valid' : `invalid+${errorMessage}`
+					}}
+					p,q,e</label
+				>
+				<label style="color: aliceblue" for=""
+					>Your private key ->{{ d }}
+				</label>
+			</div>
 		</header>
 		<div class="body">
 			<div
@@ -38,11 +71,14 @@ export default {
 		return {
 			message: '',
 			conversationData: [],
-			p: 7457,
-			q: 7459,
+			p: 20011,
+			q: 20029,
 			e: 7,
-			n: 55621763,
-			d: 15887671,
+			phi: 400760280,
+			n: 400800319,
+			d: 286257343,
+			validKeysFlag: true,
+			errorMessage: '',
 		};
 		// n must be greater that 67364234
 	},
@@ -68,6 +104,50 @@ export default {
 		},
 	},
 	methods: {
+		isPrime(n) {
+			if (n <= 1) return false;
+			if (n <= 3) return true;
+			if (n % 2 == 0 || n % 3 == 0) return false;
+			for (let i = 5; i * i <= n; i = i + 6)
+				if (n % i == 0 || n % (i + 2) == 0) return false;
+			return true;
+		},
+		validKeys() {
+			// check if p,q are prime
+			if (this.p == '' || (this.q == '' && this.e == '')) {
+				this.validKeysFlag = false;
+				this.errorMessage = 'p,q,e must be filled';
+				return;
+			}
+			this.pi = (this.p - 1) * (this.q - 1);
+			this.n = this.p * this.q;
+			if (this.n <= 67364234) {
+				this.validKeysFlag = false;
+				this.errorMessage = 'n must be greater that 67364234';
+				return false;
+			}
+			if (!(this.isPrime(this.p) && this.isPrime(this.q))) {
+				this.errorMessage = 'p,q must be prime';
+				this.validKeysFlag = false;
+
+				return;
+			}
+			// check if e is coprime with phi
+			if (this.gcd(this.e, this.phi) != 1) {
+				this.errorMessage = 'e must be coprime with phi';
+				return;
+			}
+			// check if e is less than phi
+			if (this.e > this.phi) {
+				this.errorMessage = 'e must be less than phi';
+				return;
+			}
+			// check if e is less than n
+			this.d = this.inverseModulo(this.e, this.phi);
+			this.validKeysFlag = true;
+
+			return true;
+		},
 		encodeMessage(message) {
 			// 2^1
 			let encodedMessage = 0;
@@ -124,24 +204,30 @@ export default {
 		},
 		decryptMessage(message, d, n) {
 			console.log('decryptMessage', message, d, n);
-			return this.powerAlgorithmMod(Number(message), d, n);
+			return this.powerAlgorithmMod(message, d, n);
 		},
 		powerAlgorithmMod(a, b, n) {
+			// eslint-disable-next-line
+			a = BigInt(a);
+			// eslint-disable-next-line
+			n = BigInt(n);
 			let binaryB = b.toString(2);
-			let result = 1;
+			// eslint-disable-next-line
+			let result = BigInt(1);
 			for (let i = 0; i < binaryB.length; i++) {
 				result = (result * result) % n;
 				if (binaryB[i] == 1) {
 					result = (result * a) % n;
 				}
 			}
-			return result;
+			return Number(result);
 		},
 		gcd(a, b) {
-			if (b == 0) return a;
-			else return this.gcd(a, a % b);
+			if (b === 0) return a;
+			return this.gcd(b, a % b);
 		},
 		inverseModulo(a, m) {
+			let M = m;
 			let x1, x2, y1, y2, q, r, x, y;
 			x1 = 0;
 			x2 = 1;
@@ -162,10 +248,19 @@ export default {
 			if (a != 1) {
 				return 'a and m are not coprime';
 			} else {
+				if (x2 < 0) {
+					console.log('x2', x2);
+					console.log('m', M);
+					x2 += M;
+					x2 = x2 % M;
+				}
 				return x2;
 			}
 		},
 		recieveMessage(message) {
+			// this.e = Number(message.e);
+			// this.n = Number(message.n);
+			message = message.message;
 			console.log('recieve message');
 			// split the message on / to separate each group
 			let groupsArray = message.split('|');
@@ -174,11 +269,11 @@ export default {
 			for (let i = 0; i < groupsArray.length; i++) {
 				groupsArray[i] = this.decryptMessage(
 					groupsArray[i],
-					this.d,
-					this.n
+					Number(localStorage.getItem('PR')),
+					Number(localStorage.getItem('n'))
 				);
 			}
-			console.log('hjh', groupsArray);
+			console.log('decrypted', groupsArray);
 			// decode the message
 			for (let i = 0; i < groupsArray.length; i++) {
 				groupsArray[i] = this.decodeMessage(groupsArray[i]);
@@ -194,6 +289,13 @@ export default {
 			console.log('sendmessage');
 			// break the string into a groups of 5 characters
 			let groupsArray = this.message.match(/.{1,5}/g);
+			console.log(this.$route.params.id);
+			let ll = this.$route.params.id.split('|');
+			console.log(ll);
+			let toId = this.$route.params.id.split('|')[0];
+			let e = Number(this.$route.params.id.split('|')[1]);
+			let n = Number(this.$route.params.id.split('|')[2]);
+			console.log('to Keys', e, n);
 			// console.log('groupArray', groupsArray);
 			if (groupsArray[groupsArray.length - 1].length < 5) {
 				// add padding
@@ -206,11 +308,7 @@ export default {
 				// encode each group
 				groupsArray[i] = this.encodeMessage(groupsArray[i]);
 				// encrypt each group
-				groupsArray[i] = this.encryptMessage(
-					groupsArray[i],
-					this.e,
-					this.n
-				);
+				groupsArray[i] = this.encryptMessage(groupsArray[i], e, n);
 			}
 			// join the groups
 			console.log('groupArray2', groupsArray);
@@ -218,8 +316,10 @@ export default {
 			console.log('encryptedMessage', encryptedMessage);
 			this.$socket.emit('send-msg', {
 				message: encryptedMessage,
-				to: this.$route.params.id,
+				to: this.$route.params.id.split('|')[0],
 				from: localStorage.getItem('userId'),
+				e: e,
+				n: n,
 			});
 			console.log('send message');
 			this.conversationData.push({
@@ -228,7 +328,7 @@ export default {
 			});
 			this.$store.dispatch('sendMessage', {
 				message: this.message,
-				toId: this.$route.params.id,
+				toId: toId,
 			});
 			this.message = '';
 		},
@@ -288,11 +388,12 @@ export default {
 		const conversationData = await this.$store.dispatch(
 			'getConversationData',
 			{
-				toId: this.$route.params.id,
+				toId: this.$route.params.id.split('|')[0],
 			}
 		);
 		this.conversationData = conversationData.conversationData;
 		console.log('conversationData', this.conversationData);
+		// console.log(this.$route.params.id);
 	},
 };
 </script>
@@ -307,7 +408,7 @@ p {
 .conservation-header {
 	position: absolute;
 	width: 100%;
-	height: 50px;
+	height: 61px;
 	top: 0;
 	left: 0;
 	background-color: brown;
