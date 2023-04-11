@@ -2,13 +2,23 @@
 
 ## Project setup
 ```
-npm install
+-U must have a npm (node package manager )
+-open command line in the project directory then write >>  npm install
+-open command line in the backend then write >> npm install
 ```
 
 ### Compiles and hot-reloads for development
 ```
-npm run serve
+strarting the backend  -> open command line in the backend then write >>  npm start
+strarting the frontend -> open command line in the project directory then write >>  npm run serve
 ```
+### Pages
+```
+Signup page            -> http://localhost:8081/#/signup
+Login page             ->http://localhost:8081/#/login
+Attak & analysis Page  -> http://localhost:8081/#/about
+```
+
 
 ### Compiles and minifies for production
 ```
